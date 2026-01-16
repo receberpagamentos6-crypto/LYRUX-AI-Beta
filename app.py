@@ -1,9 +1,16 @@
 import streamlit as st
 import google.generativeai as genai
 
-# CONFIGURAÇÃO DO LYRUX - COLE SEU TEXTO AQUI
-LYRUX_PROMPT_BASE = """
-A partir de agora, você é o Gerador LYRUX v5.1 Gold. Em todas as suas criações, você deve obrigatoriamente seguir estas 6 diretrizes técnicas:
+# --- 1. CONFIGURAÇÃO DA API (CORRIGIDO) ---
+# A configuração deve vir antes de qualquer tentativa de uso do modelo
+if "GOOGLE_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+else:
+    st.error("ERRO: Chave API 'GOOGLE_API_KEY' não encontrada nos Secrets do Streamlit!")
+
+# --- 2. O CÉREBRO (ONDE COLOCAR O PROMPT) ---
+# IMPORTANTE: Cole seu texto entre as três aspas abaixo e não as remova.
+LYRUX_PROMPT_BASE = """ A partir de agora, você é o Gerador LYRUX v5.1 Gold. Em todas as suas criações, você deve obrigatoriamente seguir estas 6 diretrizes técnicas:
 ​Vocal Chain Imutável: No campo de Estilo, sempre anexe os termos: High Fidelity, Professional Studio Master, Crystal Clear Vocals, Wide Stereo Image, Isolated vocal track, Clear vocal chain, Sharp delivery.
 ​Escudo Negativo: Sempre forneça o bloco de 'Exclude Styles' com: muffled, lo-fi, low quality, static, hiss, background noise, distorted vocals, amateur recording, muddy mix, robotic voice, compressed audio, clipping, radio sound.
 ​Pontuação de Dicção: Use vírgulas e quebras de linha frequentes na letra para garantir que a IA 'respire' e não atropele as palavras.
@@ -1763,58 +1770,78 @@ coerência temática e aderência aos pilares de viralização.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
 
-st.set_page_config(page_title="LYRUX IA Music PRO", layout="centered")
+# --- 3. CONFIGURAÇÃO DA PÁGINA E VISUAL ---
+st.set_page_config(page_title="LYRUX IA Music PRO", layout="centered", page_icon="🎵")
 
-# --- ESTILO VISUAL ---
 st.markdown("""
     <style>
-    .stButton>button {width: 100%; background-color: #FFD700; color: black; font-weight: bold;}
-    .reportview-container {background: #000000}
+    .stApp { background-color: #0e1117; color: white; }
+    .stButton>button {
+        width: 100%; 
+        background-color: #FFD700; 
+        color: black; 
+        font-weight: bold;
+        border-radius: 10px;
+        height: 50px;
+        border: none;
+    }
+    .stTextArea>div>div>textarea { background-color: #262730; color: white; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎵 LYRUX IA Music PRO v5.1")
-st.subheader("O Gerador de Letras Virais")
-
-# --- SISTEMA DE ACESSO ---
-# Simulando o pagamento: Se o link de retorno tiver "?pago=true", liberamos o acesso
+# --- 4. COMANDO DE LIBERAÇÃO PÓS-PAGAMENTO ---
+# O sistema verifica se a URL termina com ?pago=true
 query_params = st.query_params
 foi_pago = query_params.get("pago") == "true"
 
+st.title("🎵 LYRUX IA Music PRO v5.1")
+
 if not foi_pago:
-    st.warning("⚠️ Você está na versão de demonstração.")
-    st.info("Para gerar letras ilimitadas e usar o motor Gold v5.1, adquira seu acesso abaixo.")
+    st.info("💎 ACESSO RESTRITO: Assine para liberar o Cérebro PRO.")
     
-    # Substitua pelo seu link de pagamento do Mercado Pago
-    url_pagamento = "https://www.mercadopago.com.br/seu-link-aqui" 
-    st.markdown(f'[<button style="width:100%; height:50px; background-color:#00AEEF; border:none; color:white; border-radius:5px; cursor:pointer;">COMPRAR ACESSO PRO (R$ 19,90)</button>]({url_pagamento})', unsafe_allow_html=True)
+    # --- COLOQUE SEU LINK DO MERCADO PAGO ABAIXO ---
+    url_assinatura = "https://www.mercadopago.com.br/subscriptions/checkout?preapproval_plan_id=3ff0f1ba1b4d4c8abdc72e739e4ce070" 
     
+    st.markdown(f'''
+        <a href="{url_assinatura}" target="_blank">
+            <button>
+                ASSINAR PLANO PRO - R$ 29,90 / mês
+            </button>
+        </a>
+    ''', unsafe_allow_html=True)
+    st.caption("Liberação imediata após confirmação do pagamento (Pix ou Cartão).")
     st.divider()
-    st.write("Ou teste a versão demonstrativa:")
 
-# --- INTERFACE DO GERADOR ---
-tema = st.text_area("Sobre o que será sua música?", placeholder="Ex: Trap sobre vencer na vida...")
+# --- 5. INTERFACE DO GERADOR ---
+tema = st.text_area("Sobre o que será sua música?", placeholder="Ex: Uma música sobre recomeço...", height=150)
 
-if st.button("GERAR LETRA AGORA"):
+if st.button("🚀 GERAR LETRA PROFISSIONAL"):
     if not tema:
-        st.error("Por favor, digite um tema.")
+        st.error("Por favor, digite um tema ou assunto!")
     else:
         try:
-            # Pega a chave que você vai colocar no Streamlit Secrets
-            genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+            # Seleção do modelo (Flash é mais rápido e estável para letras)
             model = genai.GenerativeModel('gemini-1.5-flash')
             
-            # Se não foi pago, ele gera uma versão curta ou simples
-            prompt_final = f"{LYRUX_PROMPT_BASE}\n\nASSUNTO: {tema}"
-            if not foi_pago:
-                prompt_final += "\n(GERAR VERSÃO DEMONSTRATIVA CURTA)"
+            # LÓGICA DE LIBERAÇÃO:
+            if foi_pago:
+                # Se pagou, usa o seu CÉREBRO PRO
+                prompt_final = f"{LYRUX_PROMPT_BASE}\n\nCLIENTE SOLICITOU O TEMA: {tema}"
+            else:
+                # Se não pagou, gera uma letra básica "amostra grátis"
+                prompt_final = f"Crie uma letra de música curta e simples sobre: {tema}. No final, avise que para letras profissionais ele deve assinar o Lyrux PRO."
 
-            with st.spinner("Compondo sua música viral..."):
+            with st.spinner("🧠 LYRUX IA está compondo..."):
                 response = model.generate_content(prompt_final)
-                st.success("Letra Gerada com Sucesso!")
-                st.code(response.text, language="text")
                 
-                if not foi_pago:
-                    st.write("🔥 **Gostou?** A versão PRO gera a estrutura completa com tags de hardware e análise viral.")
+                if response.text:
+                    st.success("✅ COMPOSIÇÃO FINALIZADA!")
+                    st.markdown("---")
+                    st.markdown(response.text)
+                else:
+                    st.warning("A IA não conseguiu gerar a resposta. Tente outro tema.")
+                
         except Exception as e:
-            st.error("Erro de conexão. Verifique sua chave de API.")
+            # Caso ocorra erro de cota ou chave inválida
+            st.error("Erro de Conexão com a IA.")
+            st.info("Certifique-se de que sua API KEY está ativa e sem restrições no Google AI Studio.")
