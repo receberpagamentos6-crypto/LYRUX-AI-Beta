@@ -1787,7 +1787,7 @@ if not foi_pago:
     
     # Substitua pelo seu link de pagamento do Mercado Pago
     url_pagamento = "https://www.mercadopago.com.br/seu-link-aqui" 
-    st.markdown(f'[<button style="width:100%; height:50px; background-color:#00AEEF; border:none; color:white; border-radius:5px; cursor:pointer;">COMPRAR ACESSO PRO (R$ 19,90)</button>]({url_pagamento})', unsafe_allow_path=True)
+    st.markdown(f'[<button style="width:100%; height:50px; background-color:#00AEEF; border:none; color:white; border-radius:5px; cursor:pointer;">COMPRAR ACESSO PRO (R$ 19,90)</button>]({url_pagamento})', unsafe_allow_html=True)
     
     st.divider()
     st.write("Ou teste a versão demonstrativa:")
