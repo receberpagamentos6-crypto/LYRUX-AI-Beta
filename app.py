@@ -1771,7 +1771,7 @@ st.markdown("""
     .stButton>button {width: 100%; background-color: #FFD700; color: black; font-weight: bold;}
     .reportview-container {background: #000000}
     </style>
-    """, unsafe_allow_path=True)
+    """, unsafe_allow_html=True)
 
 st.title("🎵 LYRUX IA Music PRO v5.1")
 st.subheader("O Gerador de Letras Virais")
